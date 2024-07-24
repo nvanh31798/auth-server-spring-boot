@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,13 +28,12 @@ import java.util.UUID;
 @Configuration
 public class AuthorizationConfig {
 
-//    @Autowired
-//    private UserService userService;
+    @Autowired
+    private UserService userService;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
+    private PasswordEncoder passwordEncoder () {
         return new BCryptPasswordEncoder();
-    }
+    };
 
 //    @Bean
 //    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
@@ -55,14 +56,19 @@ public class AuthorizationConfig {
 //        return registeredClientRepository;
 //    }
 
-//    @Autowired
-//    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder());
-//    }
-//
+    @Autowired
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService()).passwordEncoder(this.passwordEncoder());
+    }
+
 //    @Bean
-//    public UserDetailsService userDetailsService() {
-//        return username -> (UserDetails) userService.findByUserName(username)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//    }
+    public UserDetailsService userDetailsService() {
+        return username -> (UserDetails) userService.findByUserName(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
+    }
 }

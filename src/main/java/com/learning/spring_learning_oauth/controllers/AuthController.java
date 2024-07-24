@@ -8,6 +8,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +20,10 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Endpoint for user registration")
@@ -28,7 +35,12 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Login user", description = "Endpoint for user login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
-//        userService.
-        return ResponseEntity.ok("Login successful");
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                return ResponseEntity.ok("Login successful");
+        } catch (Exception e){
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
     }
 }

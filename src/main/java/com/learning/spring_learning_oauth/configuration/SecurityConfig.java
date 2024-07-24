@@ -12,7 +12,6 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 @EnableWebSecurity
 public class SecurityConfig {
 
-
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
         http
